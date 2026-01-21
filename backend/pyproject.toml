@@ -7,7 +7,9 @@ authors = [
     { name = "Nguyễn Phúc Toàn", email = "ngphuc_toan@tutanota.com" }
 ]
 requires-python = ">=3.14"
-dependencies = []
+dependencies = [
+    "pandas>=2.3.3",
+]
 
 [build-system]
 requires = ["uv_build>=0.9.26,<0.10.0"]

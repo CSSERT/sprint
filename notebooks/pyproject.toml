@@ -1,13 +1,12 @@
 [project]
-name = "stock-price-forecasting"
+name = "notebooks"
 version = "0.1.0"
 description = "Add your description here"
 readme = "README.md"
 requires-python = ">=3.14"
 dependencies = []
 
-[tool.uv.workspace]
-members = [
-    "backend",
-    "notebooks",
+[dependency-groups]
+dev = [
+    "ipykernel>=7.1.0",
 ]
