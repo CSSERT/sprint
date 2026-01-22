@@ -4,13 +4,37 @@ version = "0.1.0"
 description = "Add your description here"
 readme = "README.md"
 authors = [
-    { name = "Nguyễn Phúc Toàn", email = "ngphuc_toan@tutanota.com" }
+    {
+        name = "Nguyễn Phúc Toàn",
+        email = "ngphuc_toan@tutanota.com",
+    }
 ]
 requires-python = ">=3.14"
 dependencies = [
     "pandas>=2.3.3",
+    "torch>=2.10.0",
+    "torchvision>=0.25.0",
+]
+
+[tool.uv.sources]
+torch = [
+    {
+        index = "pytorch-cu128",
+        marker = "sys_platform == 'linux' or sys_platform == 'win32'",
+    },
+]
+torchvision = [
+    {
+        index = "pytorch-cu128",
+        marker = "sys_platform == 'linux' or sys_platform == 'win32'",
+    },
 ]
 
 [build-system]
 requires = ["uv_build>=0.9.26,<0.10.0"]
 build-backend = "uv_build"
+
+[[tool.uv.index]]
+name = "pytorch-cu128"
+url = "https://download.pytorch.org/whl/cu128"
+explicit = true
