@@ -1,5 +1,8 @@
-<p align="center">
-    <img src="/assets/logo.png" width="200" />
-    <br /><br />
-    <em>Stock Price Intelligent Tool</em>
-</p>
+<h1 align="center">
+  <img src="./assets/logo.svg" width="300" height="75" /><br />
+  <em><small>Stock Price Intelligent Tool</small></em>
+</h1>
+
+A set of tools for forecasting and anomaly detection on stock prices.
+
+<h2 align="center">🚧 Work in progress! 🚧</h2>

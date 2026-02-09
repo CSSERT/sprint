@@ -1,4 +1,4 @@
-from typing import Any, Callable, NotRequired, TypedDict
+from typing import Any, NotRequired, TypedDict
 
 import torch
 import torch.nn as nn
@@ -16,6 +16,3 @@ class Checkpoint(TypedDict):
     config: ModelConfig
     state_dict: dict[str, torch.Tensor]
     metadata: NotRequired[dict[str, Any]]
-
-
-ModelBuilder = Callable[[ModelConfig], nn.Module]
