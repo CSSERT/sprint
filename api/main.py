@@ -1,6 +1,10 @@
-def main():
-    print("Hello from api!")
+from fastapi import FastAPI
 
+from v1.routers import health
 
-if __name__ == "__main__":
-    main()
+app = FastAPI(
+    title="Sprint API",
+    version="1.0.0",
+)
+
+app.include_router(health.router, prefix="/v1")
