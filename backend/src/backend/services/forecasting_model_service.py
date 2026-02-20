@@ -1,5 +1,6 @@
 import json
 from pathlib import Path
+from typing import Any, TypedDict
 
 import torch
 from safetensors.torch import (
@@ -9,12 +10,14 @@ from safetensors.torch import (
     save_file as safetensors_save_file,
 )
 
-from ..registry import get_model_registry
-from ..types import (
-    ModelConfig,
-    ModelKwargs,
-    ModelRegistry,
-)
+from ..models.registry import ModelRegistry, get_model_registry
+
+ModelKwargs = dict[str, Any]
+
+
+class ModelConfig(TypedDict, total=False):
+    model_name: str
+    model_kwargs: ModelKwargs
 
 
 class UnknownModelError(Exception):

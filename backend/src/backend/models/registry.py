@@ -1,6 +1,6 @@
 import torch.nn as nn
 
-from .types import ModelRegistry
+ModelRegistry = dict[str, type[nn.Module]]
 
 _MODEL_REGISTRY: ModelRegistry = {}
 

@@ -1,7 +1,7 @@
 import torch
 import torch.nn as nn
 
-from backend.registry import register_model
+from ..registry import register_model
 
 
 @register_model("sprint.rnn.lstm")
