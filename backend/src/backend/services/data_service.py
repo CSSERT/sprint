@@ -7,7 +7,12 @@ from torch.utils.data import DataLoader
 from backend.types.data import DataState
 
 from ..data.loaders import StockLoader
-from ..data.processors import Standardizer, TrainTestSplitter, WindowGenerator
+from ..data.processors import (
+    DataLoaderFactory,
+    Standardizer,
+    TrainTestSplitter,
+    WindowGenerator,
+)
 
 
 @dataclass
@@ -17,14 +22,11 @@ class TrainTestLoader:
 
 
 class DataServiceConfig(TypedDict):
-    data_dir: Required[str | Path]
+    data_dir: NotRequired[str | Path]
     interval: Required[str]
-    feature_cols: Required[list[str]]
-    target_col: Required[str]
 
     test_size: NotRequired[float]
-    window_size: NotRequired[int]
-    batch_size: NotRequired[int]
+    lags: NotRequired[list[int]]
 
 
 class DataService:
@@ -33,27 +35,29 @@ class DataService:
         config: DataServiceConfig,
     ) -> None:
         self.loader = StockLoader(
-            data_dir=config["data_dir"],
+            data_dir=config.get("data_dir", Path.cwd() / ".." / "data" / "raw"),
             interval=config["interval"],
         )
         self.processors = [
-            TrainTestSplitter(test_size=config.get("test_size", 0.2)),
+            TrainTestSplitter(test_size=config.get("test_size", 0.0)),
             Standardizer(),
             WindowGenerator(
-                feature_cols=config["feature_cols"],
-                target_col=config["target_col"],
-                window_size=config.get("window_size", 5),
-                batch_size=config.get("batch_size", 32),
+                target_col="close",
+                lags=config.get("window_size", [1, 7, 30]),
             ),
+            DataLoaderFactory(target_col="close"),
         ]
+        self.should_include_test_set = config.get("test_size", 0.0) > 0.0
 
-    def get(self, ticker: str) -> tuple[DataLoader, DataLoader]:
+    def get(self, ticker: str) -> DataLoader | tuple[DataLoader, DataLoader]:
         df = self.loader.get_for_ticker(ticker)
-        data = DataState(df, None)
+        data = DataState(df, extras=None, meta=None)
 
         for processor in self.processors:
             processor.prepare(data)
             data = processor.apply(data)
 
-        data = cast(DataState[None, TrainTestLoader], data)
-        return data.extras.train, data.extras.test
+        data = cast(DataState[None, TrainTestLoader, None], data)
+        if self.should_include_test_set:
+            return data.extras.train, data.extras.test
+        return data.extras.train

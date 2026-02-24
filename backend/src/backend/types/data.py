@@ -1,16 +1,40 @@
+from dataclasses import dataclass
 from typing import Generic, TypeVar
+
+import pandas as pd
+from torch.utils.data import DataLoader
 
 TDefault = TypeVar("TDefault")
 TExtras = TypeVar("TExtras")
+TMeta = TypeVar("TMeta")
 
 
-class DataState(Generic[TDefault, TExtras]):
-    def __init__(self, _default: TDefault, extras: TExtras) -> None:
+class DataState(Generic[TDefault, TExtras, TMeta]):
+    def __init__(self, _default: TDefault, extras: TExtras, meta: TMeta) -> None:
         self._default = _default
         self.extras = extras
+        self.meta = meta
+
+
+@dataclass
+class TrainTestData:
+    train: pd.DataFrame
+    test: pd.DataFrame
+
+
+@dataclass
+class TrainTestLoader:
+    train: DataLoader
+    test: DataLoader
+
+
+@dataclass
+class WindowingMeta:
+    n_features: int
+    n_lags: int
 
 
 class DataProcessor:
-    def prepare(self, data: DataState, *args, **kwargs) -> None: ...
+    def prepare(self, data: DataState) -> None: ...
 
-    def apply(self, data: DataState, *args, **kwargs) -> DataState: ...
+    def apply(self, data: DataState) -> DataState: ...

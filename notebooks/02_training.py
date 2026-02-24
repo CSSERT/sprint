@@ -1,9 +1,9 @@
 # %% Libraries
-import matplotlib.pyplot as plt
-import torch.nn as nn
-import torch.optim as optim
+from pathlib import Path
 
 import backend.models.bootstrap  # noqa: F401
+import torch.nn as nn
+import torch.optim as optim
 from backend.services import DataService, ForecastingModelService, TrainerService
 
 # %% Load data
@@ -32,14 +32,8 @@ trainer = TrainerService(
 )
 trainer.train(
     train_loader,
-    epochs=50,
+    epochs=100,
 )
 
-# %% Evaluation
-y_trues, y_hats = [], []
-for x, y in test_loader:
-    y_trues.extend(y.cpu().numpy().tolist())
-    y_hats.extend(lstm.predict(x.to("cuda")).cpu().numpy().tolist())
-plt.plot(y_trues)
-plt.plot(y_hats)
-plt.show()
+# %% Saving
+lstm.save_pretrained(Path.cwd() / ".." / "artifacts" / "sprint.rnn.lstm" / "latest")

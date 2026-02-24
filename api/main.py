@@ -1,6 +1,6 @@
-from fastapi import FastAPI
-
+import backend.models.bootstrap  # noqa: F401
 import v1.routers as v1
+from fastapi import FastAPI
 
 app = FastAPI(
     title="Sprint API",
