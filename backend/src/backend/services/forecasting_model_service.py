@@ -2,6 +2,7 @@ import json
 from pathlib import Path
 from typing import Any, TypedDict
 
+import numpy as np
 import torch
 from safetensors.torch import (
     load_file as safetensors_load_file,
@@ -9,6 +10,7 @@ from safetensors.torch import (
 from safetensors.torch import (
     save_file as safetensors_save_file,
 )
+from torch.utils.data.dataloader import DataLoader
 
 from ..models.registry import ModelRegistry, get_model_registry
 
@@ -89,6 +91,24 @@ class ForecastingModelService:
         safetensors_save_file(model_state_dict, safetensors_path)
 
     @torch.inference_mode()
-    def predict(self, *args, **kwargs):
+    def predict(
+        self,
+        loader: DataLoader,
+        *,
+        return_targets: bool = False,
+    ) -> np.ndarray | tuple[np.ndarray, np.ndarray]:
         self.model.eval()
-        return self.model(*args, **kwargs)
+
+        y_trues, y_hats = [], []
+
+        for x, y in loader:
+            y_hat = self.model(x.to(self.device))
+            y_trues.append(y)
+            y_hats.append(y_hat.cpu())
+
+        y_trues = torch.cat(y_trues, dim=0).numpy()
+        y_hats = torch.cat(y_hats, dim=0).numpy()
+
+        if return_targets:
+            return y_hats, y_trues
+        return y_hats

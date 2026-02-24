@@ -8,33 +8,41 @@ from ..registry import register_model
 class LSTM(nn.Module):
     def __init__(
         self,
-        input_size: int,
-        output_size: int,
+        n_features: int,
+        n_horizons: int,
+        n_quantiles: int,
+        *,
+        n_layers: int = 2,
         hidden_size: int = 128,
-        num_layers: int = 2,
         dropout: float = 0.0,
         bidirectional: bool = True,
     ) -> None:
         super().__init__()
 
+        self.n_horizons = n_horizons
+        self.n_quantiles = n_quantiles
+
         self.encoder = nn.LSTM(
-            input_size=input_size,
+            input_size=n_features,
             hidden_size=hidden_size,
-            num_layers=num_layers,
+            num_layers=n_layers,
             batch_first=True,
-            dropout=dropout,
+            dropout=dropout if n_layers > 1 else 0.0,
             bidirectional=bidirectional,
         )
 
         self.regressor = nn.Linear(
             hidden_size * (2 if bidirectional else 1),
-            output_size,
+            n_horizons * n_quantiles,
         )
 
-    def forward(self, X: torch.Tensor) -> torch.Tensor:
-        out, _ = self.encoder(X)
+    def forward(self, x: torch.Tensor) -> torch.Tensor:
+        b = x.size(0)
+
+        out, _ = self.encoder(x)
         out = out[:, -1, :]
+
         out = self.regressor(out)
-        if self.regressor.out_features == 1:
-            out = out.squeeze(1)
+        out = out.view(b, self.n_horizons, self.n_quantiles)
+
         return out

@@ -24,8 +24,6 @@ def forecast(
     data_service: DataService = Depends(get_data_service),
     model_service: ForecastingModelService = Depends(get_model_service),
 ) -> ForecastResponse:
-    train_loader = data_service.get(req.ticker)
-    predictions = []
-    for x, _ in train_loader:
-        predictions.extend(model_service.predict(x.to("cuda")).cpu().numpy().tolist())
-    return ForecastResponse(predictions=[predictions[-1]])
+    loader = data_service.get(req.ticker)
+    predictions = model_service.predict(loader)
+    return ForecastResponse(predictions=predictions.tolist()[-1])

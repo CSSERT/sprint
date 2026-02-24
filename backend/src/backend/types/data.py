@@ -29,9 +29,11 @@ class TrainTestLoader:
 
 
 @dataclass
-class WindowingMeta:
-    n_features: int
+class WindowMeta:
+    feature_columns: list[str]
+    target_columns: list[str]
     n_lags: int
+    n_features: int
 
 
 class DataProcessor:

@@ -1,10 +1,8 @@
-from dataclasses import dataclass
 from pathlib import Path
 from typing import NotRequired, Required, TypedDict, cast
 
+import numpy as np
 from torch.utils.data import DataLoader
-
-from backend.types.data import DataState
 
 from ..data.loaders import StockLoader
 from ..data.processors import (
@@ -13,12 +11,7 @@ from ..data.processors import (
     TrainTestSplitter,
     WindowGenerator,
 )
-
-
-@dataclass
-class TrainTestLoader:
-    train: DataLoader
-    test: DataLoader
+from ..types.data import DataState, TrainTestLoader
 
 
 class DataServiceConfig(TypedDict):
@@ -27,6 +20,7 @@ class DataServiceConfig(TypedDict):
 
     test_size: NotRequired[float]
     lags: NotRequired[list[int]]
+    horizons: NotRequired[list[int]]
 
 
 class DataService:
@@ -43,9 +37,10 @@ class DataService:
             Standardizer(),
             WindowGenerator(
                 target_col="close",
-                lags=config.get("window_size", [1, 7, 30]),
+                lags=config.get("lags", [1, 7, 30]),
+                horizons=config.get("horizons", [1, 3, 7]),
             ),
-            DataLoaderFactory(target_col="close"),
+            DataLoaderFactory(),
         ]
         self.should_include_test_set = config.get("test_size", 0.0) > 0.0
 
@@ -61,3 +56,6 @@ class DataService:
         if self.should_include_test_set:
             return data.extras.train, data.extras.test
         return data.extras.train
+
+    def inverse_y(self, y: np.ndarray) -> np.ndarray:
+        return self.processors[1]._inverse_scale(y)

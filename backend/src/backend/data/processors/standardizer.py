@@ -1,3 +1,5 @@
+from typing import Any, cast
+
 import pandas as pd
 
 from ...types.data import DataProcessor, DataState, TrainTestData
@@ -8,11 +10,14 @@ class Standardizer(DataProcessor):
         self,
         data: DataState[None, TrainTestData, None],
     ) -> None:
-        self.mean = data.extras.train.mean()
-        self.std = data.extras.train.std()
+        self.mean = cast(pd.Series, data.extras.train.mean())
+        self.std = cast(pd.Series, data.extras.train.std())
 
     def _scale(self, df: pd.DataFrame) -> pd.DataFrame:
         return (df - self.mean) / self.std
+
+    def _inverse_scale(self, df: Any) -> Any:
+        return df * self.std["close"] + self.mean["close"]
 
     def apply(
         self,
