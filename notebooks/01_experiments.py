@@ -7,10 +7,10 @@ from backend.services import DataService, ForecastingModelService, TrainerServic
 
 # %% Load data
 data_service = DataService(
-    {
-        "interval": "daily",
-        "test_size": 0.2,
-    }
+    interval="daily",
+    lags=list(range(1, 31)),
+    horizons=list(range(1, 8)),
+    test_size=0.2,
 )
 train_loader, test_loader = data_service.get("VCB")
 
@@ -18,27 +18,37 @@ train_loader, test_loader = data_service.get("VCB")
 lstm = ForecastingModelService(
     "sprint.rnn.lstm",
     {
-        "n_features": 5,
-        "n_horizons": 3,
-        "n_quantiles": 3,
+        "n_features": data_service.n_features,
+        "n_horizons": len(data_service.horizons),
+        "quantiles": [0.1, 0.5, 0.9],
     },
 )
+
 
 # %% Training
 trainer = TrainerService(
     forecaster=lstm,
     optimizer=optim.AdamW(lstm.model.parameters(), lr=1e-3),
-    criterion=QuantileLoss([0.1, 0.5, 0.9]),
+    criterion=QuantileLoss(lstm.model.quantiles.tolist()),
 )
 trainer.train(
     train_loader,
-    epochs=50,
+    epochs=10,
 )
 
-# %% Evaluation
+# %% Plotting latest
 y_hats, y_trues = lstm.predict(test_loader, return_targets=True)
 y_hats = data_service.inverse_y(y_hats)
 y_trues = data_service.inverse_y(y_trues)
-plt.plot(y_trues[:, 0])
-plt.plot(y_hats[:, 0, 1])
+
+y_hat_latest = y_hats[-1]
+y_true_latest = y_trues[-1]
+
+x = range(1, y_hat_latest.shape[0] + 1)
+
+plt.plot(x, y_true_latest, color="black", label="True")
+plt.plot(x, y_hat_latest[:, 1], "--", label="Median Prediction")
+plt.fill_between(x, y_hat_latest[:, 0], y_hat_latest[:, 2], alpha=0.2)
+
+plt.legend()
 plt.show()

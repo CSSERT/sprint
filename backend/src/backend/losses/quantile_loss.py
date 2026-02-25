@@ -12,8 +12,10 @@ class QuantileLoss(nn.Module):
         device: torch.device | str = "cuda",
     ) -> None:
         super().__init__()
+
         self.register_buffer(
-            "quantiles", torch.tensor(quantiles).view(1, 1, -1).to(device)
+            "quantiles",
+            torch.tensor(quantiles, dtype=torch.float32).view(1, 1, -1).to(device),
         )
 
     def forward(self, hat: torch.Tensor, true: torch.Tensor) -> torch.Tensor:

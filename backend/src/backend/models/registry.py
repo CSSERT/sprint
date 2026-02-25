@@ -1,13 +1,13 @@
-import torch.nn as nn
+from ..types.model import QuantileModel
 
-ModelRegistry = dict[str, type[nn.Module]]
+ModelRegistry = dict[str, type[QuantileModel]]
 
 _MODEL_REGISTRY: ModelRegistry = {}
 
 
 def register_model(name: str):
     # Decorator pattern to register model!
-    def decorator(cls: type[nn.Module]) -> type[nn.Module]:
+    def decorator(cls: type[QuantileModel]) -> type[QuantileModel]:
         _MODEL_REGISTRY[name] = cls
         return cls
 

@@ -20,7 +20,7 @@ class DataLoaderFactory(DataProcessor):
     ) -> DataLoader:
         x = torch.as_tensor(
             df.loc[:, meta.feature_columns].values.reshape(
-                len(df), meta.n_lags, meta.n_features
+                len(df), meta.n_lags, len(meta.feature_columns) // meta.n_lags
             ),
             dtype=torch.float32,
         )

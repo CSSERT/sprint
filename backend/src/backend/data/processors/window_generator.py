@@ -14,8 +14,8 @@ class WindowGenerator(DataProcessor):
         lags: list[int],
         horizons: list[int],
     ) -> None:
-        self.lags = sorted(lags)
-        self.horizons = sorted(horizons)
+        self.lags = lags
+        self.horizons = horizons
         self.target_col = target_col
 
     def _create_lag_features(
@@ -63,6 +63,5 @@ class WindowGenerator(DataProcessor):
             feature_columns=feature_columns,
             target_columns=target_columns,
             n_lags=len(self.lags),
-            n_features=len(data.extras.train.columns),
         )
         return DataState(None, extras, meta)
