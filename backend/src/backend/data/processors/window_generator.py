@@ -10,25 +10,30 @@ class WindowGenerator(DataProcessor):
     def __init__(
         self,
         *,
+        feature_cols: list[str],
         target_col: str,
         lags: list[int],
         horizons: list[int],
     ) -> None:
+        self.feature_cols = feature_cols
+        self.target_col = target_col
         self.lags = lags
         self.horizons = horizons
-        self.target_col = target_col
 
     def _create_lag_features(
         self,
         df: pd.DataFrame,
     ) -> tuple[pd.DataFrame, FeatureColumns, TargetColumns]:
+        features_df = df.loc[:, self.feature_cols]
+        other_cols = [col for col in df.columns if col not in self.feature_cols]
+
         df_shifted_list = []
         feature_columns = []
         target_columns = []
 
         for lag in self.lags:
-            df_past = df.shift(lag)
-            past_columns = [f"{col}_t-{lag}" for col in df.columns]
+            df_past = features_df.shift(lag)
+            past_columns = [f"{col}_t-{lag}" for col in features_df.columns]
             df_past.columns = past_columns
 
             feature_columns.extend(past_columns)
@@ -43,8 +48,12 @@ class WindowGenerator(DataProcessor):
             target_columns.append(future_column_name)
             df_shifted_list.append(df_future)
 
-        out_df = pd.concat(df_shifted_list, axis=1)
-        return out_df.dropna(), feature_columns, target_columns
+        df_shifted_list.append(df.loc[:, other_cols])
+        return (
+            pd.concat(df_shifted_list, axis=1).dropna(),
+            feature_columns,
+            target_columns,
+        )
 
     def apply(
         self,

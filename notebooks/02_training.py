@@ -8,22 +8,21 @@ from backend.services import DataService, ForecastingModelService, TrainerServic
 
 # %% Load data
 data_service = DataService(
-    interval="daily",
     horizons=[1, 5, 10, 20],
     test_size=0.2,
 )
-train_loader, test_loader = data_service.get("VCB")
+train_loader, test_loader = data_service.get("VCB", interval="daily")
 
 # %% Model
 lstm = ForecastingModelService(
     "sprint.rnn.lstm",
     {
-        "n_features": data_service.n_features,
-        "n_horizons": len(data_service.horizons),
+        "n_features": len(data_service.loader.feature_cols),
+        "n_tickers": len(data_service.tickers.vocab),
+        "horizons": data_service.horizons,
         "quantiles": [0.1, 0.5, 0.9],
     },
 )
-
 
 # %% Training
 trainer = TrainerService(
@@ -33,9 +32,9 @@ trainer = TrainerService(
 )
 trainer.train(
     train_loader,
-    epochs=1_000,
+    # epochs=1_000,
+    epochs=1,
 )
-
 
 # %% Saving
 lstm.save_pretrained(Path.cwd() / ".." / "artifacts" / "sprint.rnn.lstm" / "latest")

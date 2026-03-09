@@ -13,6 +13,7 @@ from safetensors.torch import (
 from torch.utils.data.dataloader import DataLoader
 
 from ..models.registry import ModelRegistry, get_model_registry
+from ..types.tickers import TickerId
 
 ModelKwargs = dict[str, Any]
 
@@ -94,21 +95,19 @@ class ForecastingModelService:
     def predict(
         self,
         loader: DataLoader,
-        *,
-        return_targets: bool = False,
-    ) -> np.ndarray | tuple[np.ndarray, np.ndarray]:
+    ) -> tuple[np.ndarray, np.ndarray, list[TickerId]]:
         self.model.eval()
 
-        y_trues, y_hats = [], []
+        y_trues, y_hats, tickers = [], [], []
 
-        for x, y in loader:
-            y_hat = self.model(x.to(self.device))
+        for x, y, ticker in loader:
+            y_hat = self.model(x.to(self.device), ticker.to(self.device))
             y_trues.append(y)
             y_hats.append(y_hat.cpu())
+            tickers.append(ticker.cpu())
 
         y_trues = torch.cat(y_trues, dim=0).numpy()
         y_hats = torch.cat(y_hats, dim=0).numpy()
+        tickers = torch.cat(tickers, dim=0).squeeze(-1).tolist()
 
-        if return_targets:
-            return y_hats, y_trues
-        return y_hats
+        return y_hats, y_trues, tickers

@@ -1,8 +1,5 @@
-from typing import cast
-
 from backend.services import DataService, ForecastingModelService
 from fastapi import APIRouter, Depends, Request
-from torch.utils.data import DataLoader
 
 from ..schemas import ForecastRequest, ForecastResponse
 
@@ -23,10 +20,10 @@ def forecast(
     data: DataService = Depends(get_data),
     model: ForecastingModelService = Depends(get_model),
 ) -> ForecastResponse:
-    loader = cast(DataLoader, data.get(req.ticker))
+    loader, _ = data.get(req.ticker, interval=req.interval)
 
-    predictions = model.predict(loader)
-    prediction_last = predictions[-1]
+    predictions, _, _ = model.predict(loader)
+    prediction_last = data.inverse_y(predictions[-1])
 
     horizons = data.horizons
     quantiles = model.model.quantiles.tolist()

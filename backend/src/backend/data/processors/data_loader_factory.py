@@ -12,6 +12,9 @@ from ...types.data import (
 
 
 class DataLoaderFactory(DataProcessor):
+    def __init__(self, *, ticker_col: str) -> None:
+        self.ticker_col = ticker_col
+
     def _create_data_loader(
         self,
         df: pd.DataFrame,
@@ -28,8 +31,12 @@ class DataLoaderFactory(DataProcessor):
             df.loc[:, meta.target_columns].values,
             dtype=torch.float32,
         )
+        ticker = torch.tensor(
+            df.loc[:, [self.ticker_col]].values,
+            dtype=torch.long,
+        )
 
-        dataset = TensorDataset(x, y)
+        dataset = TensorDataset(x, y, ticker)
         return DataLoader(dataset, batch_size=batch_size, shuffle=False)
 
     def apply(

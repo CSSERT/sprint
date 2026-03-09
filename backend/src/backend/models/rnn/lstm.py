@@ -11,8 +11,10 @@ class LSTM(QuantileModel):
         self,
         *,
         n_features: int,
-        n_horizons: int,
+        n_tickers: int,
+        horizons: list[int],
         quantiles: list[float],
+        embed_dim: int = 8,
         n_layers: int = 2,
         hidden_size: int = 128,
         dropout: float = 0.0,
@@ -20,12 +22,14 @@ class LSTM(QuantileModel):
     ) -> None:
         super().__init__(
             n_features=n_features,
-            n_horizons=n_horizons,
+            n_tickers=n_tickers,
+            horizons=horizons,
             quantiles=quantiles,
+            embed_dim=embed_dim,
         )
 
         self.encoder = nn.LSTM(
-            input_size=self.n_features,
+            input_size=self.input_size,
             hidden_size=hidden_size,
             num_layers=n_layers,
             batch_first=True,
@@ -38,7 +42,9 @@ class LSTM(QuantileModel):
             self.n_horizons * self.n_quantiles,
         )
 
-    def forward(self, x: torch.Tensor) -> torch.Tensor:
+    def forward(self, x: torch.Tensor, ticker: torch.Tensor) -> torch.Tensor:
+        x = super().forward(x, ticker)
+
         b = x.size(0)
 
         out, _ = self.encoder(x)

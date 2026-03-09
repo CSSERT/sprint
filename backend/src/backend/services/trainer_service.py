@@ -87,9 +87,9 @@ class TrainerService:
             for batch in data_loader:
                 self.forecaster.model.train()
 
-                x, y = (t.to(self.forecaster.device) for t in batch)
+                x, y, ticker = (t.to(self.forecaster.device) for t in batch)
 
-                y_hat = self.forecaster.model(x)
+                y_hat = self.forecaster.model(x, ticker)
                 loss = y_hat if self.criterion is None else self.criterion(y_hat, y)
 
                 if isinstance(loss, torch.Tensor):
