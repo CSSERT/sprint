@@ -72,5 +72,6 @@ class WindowGenerator(DataProcessor):
             feature_columns=feature_columns,
             target_columns=target_columns,
             n_lags=len(self.lags),
+            feature_target_idx=self.feature_cols.index(self.target_col),
         )
         return DataState(None, extras, meta)

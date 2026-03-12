@@ -33,6 +33,12 @@ class WindowMeta:
     feature_columns: list[str]
     target_columns: list[str]
     n_lags: int
+    feature_target_idx: int
+
+
+@dataclass
+class FactoryMeta:
+    feature_target_idx: int
 
 
 class DataProcessor:

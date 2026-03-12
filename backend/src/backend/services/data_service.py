@@ -3,6 +3,7 @@ from pathlib import Path
 from typing import Literal
 
 import numpy as np
+import pandas as pd
 from torch.utils.data import DataLoader
 
 from ..data.loaders import StockLoader, TickersLoader
@@ -13,7 +14,7 @@ from ..data.processors import (
     TrainTestSplitter,
     WindowGenerator,
 )
-from ..types.data import DataState
+from ..types.data import DataState, FactoryMeta
 from ..types.tickers import Ticker, TickerId
 
 
@@ -57,12 +58,21 @@ class DataService:
             factory=DataLoaderFactory(ticker_col=self.loader.ticker_col),
         )
 
+    def get_raw(
+        self,
+        tickers: list[str] | str,
+        interval: Literal["daily", "weekly"],
+    ) -> pd.DataFrame:
+        if isinstance(tickers, str):
+            tickers = [tickers]
+        return self.loader.get_for_ticker(tickers, interval=interval)
+
     def get(
         self,
-        ticker: str,
+        tickers: list[str] | str,
         interval: Literal["daily", "weekly"],
-    ) -> tuple[DataLoader, DataLoader]:
-        df = self.loader.get_for_ticker(ticker, interval=interval)
+    ) -> tuple[DataLoader, DataLoader, FactoryMeta]:
+        df = self.get_raw(tickers, interval)
         data = DataState(df, extras=None, meta=None)
 
         data = self.processors.encoder.apply(data)
@@ -74,7 +84,7 @@ class DataService:
         data = self.processors.windower.apply(data)
         data = self.processors.factory.apply(data)
 
-        return data.extras.train, data.extras.test
+        return data.extras.train, data.extras.test, data.meta
 
     def inverse_y(self, y: np.ndarray) -> np.ndarray:
         return self.processors.scaler._inverse_scale(y)

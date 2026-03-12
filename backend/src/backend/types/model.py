@@ -13,7 +13,7 @@ class QuantileModel(nn.Module):
         n_tickers: int,
         horizons: list[int],
         quantiles: list[float],
-        embed_dim: int = 8,
+        embed_dim: int = 16,
     ) -> None:
         super().__init__()
 

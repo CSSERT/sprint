@@ -7,11 +7,11 @@ from backend.losses import QuantileLoss
 from backend.services import DataService, ForecastingModelService, TrainerService
 
 # %% Load data
-data_service = DataService(
-    horizons=[1, 5, 10, 20],
-    test_size=0.2,
+data_service = DataService(horizons=[1, 5, 10, 20])
+train_loader, test_loader, _ = data_service.get(
+    ["DGW", "FRT", "HPG", "NKG", "OCB", "PDR", "VCB", "VHM"],
+    interval="daily",
 )
-train_loader, test_loader = data_service.get("VCB", interval="daily")
 
 # %% Model
 lstm = ForecastingModelService(
@@ -32,8 +32,7 @@ trainer = TrainerService(
 )
 trainer.train(
     train_loader,
-    # epochs=1_000,
-    epochs=1,
+    epochs=1_000,
 )
 
 # %% Saving

@@ -5,6 +5,7 @@ from torch.utils.data import DataLoader, TensorDataset
 from ...types.data import (
     DataProcessor,
     DataState,
+    FactoryMeta,
     TrainTestData,
     TrainTestLoader,
     WindowMeta,
@@ -42,9 +43,10 @@ class DataLoaderFactory(DataProcessor):
     def apply(
         self,
         data: DataState[None, TrainTestData, WindowMeta],
-    ) -> DataState[None, TrainTestLoader, None]:
+    ) -> DataState[None, TrainTestLoader, FactoryMeta]:
         extras = TrainTestLoader(
             train=self._create_data_loader(data.extras.train, data.meta),
             test=self._create_data_loader(data.extras.test, data.meta),
         )
-        return DataState(None, extras, meta=None)
+        meta = FactoryMeta(feature_target_idx=data.meta.feature_target_idx)
+        return DataState(None, extras, meta=meta)
