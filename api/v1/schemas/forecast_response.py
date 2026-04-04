@@ -8,5 +8,11 @@ class HorizonQuantile(TypedDict):
     quantiles: dict[str, float]
 
 
+class History(TypedDict):
+    date: str
+    close: float
+
+
 class ForecastResponse(BaseModel):
     predictions: list[HorizonQuantile]
+    history: list[History] | None

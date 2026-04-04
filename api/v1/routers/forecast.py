@@ -20,7 +20,16 @@ def forecast(
     data: DataService = Depends(get_data),
     model: ForecastingModelService = Depends(get_model),
 ) -> ForecastResponse:
-    loader, _ = data.get(req.ticker, interval=req.interval)
+    loader, _, _ = data.get(req.ticker, req.interval)
+    history = None
+    if req.include_history:
+        history = (
+            data.get_raw(req.ticker, req.interval)
+            .iloc[-30:]
+            .assign(date=lambda x: x.index.astype(str))
+            .loc[:, ["date", "close"]]
+            .to_dict(orient="records")
+        )
 
     predictions, _, _ = model.predict(loader)
     prediction_last = data.inverse_y(predictions[-1])
@@ -38,5 +47,6 @@ def forecast(
                 },
             }
             for i, horizon in enumerate(horizons)
-        ]
+        ],
+        history=history,
     )

@@ -32,7 +32,7 @@ trainer = TrainerService(
 )
 trainer.train(
     train_loader,
-    epochs=1_000,
+    epochs=1,
 )
 
 # %% Saving
