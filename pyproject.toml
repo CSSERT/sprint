@@ -12,3 +12,12 @@ members = [
     "notebooks",
     "api",
 ]
+
+[dependency-groups]
+dev = [
+    "poethepoet>=0.44.0",
+]
+
+[tool.poe.tasks]
+start = "uv run --directory api fastapi run"
+dev = "uv run --directory api fastapi dev"

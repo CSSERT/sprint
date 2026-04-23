@@ -3,7 +3,8 @@ from typing import TypedDict
 from pydantic import BaseModel
 
 
-class HorizonQuantile(TypedDict):
+class HorizonPrediction(TypedDict):
+    date: str
     step: int
     quantiles: dict[str, float]
 
@@ -14,5 +15,7 @@ class History(TypedDict):
 
 
 class ForecastResponse(BaseModel):
-    predictions: list[HorizonQuantile]
+    ticker: str
+    interval: str
+    predictions: list[HorizonPrediction]
     history: list[History] | None

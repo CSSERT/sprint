@@ -1,5 +1,6 @@
+import pandas as pd
 from backend.services import DataService, ForecastingModelService
-from fastapi import APIRouter, Depends, Request
+from fastapi import APIRouter, Depends, HTTPException, Request
 
 from ..schemas import ForecastRequest, ForecastResponse
 
@@ -20,13 +21,22 @@ def forecast(
     data: DataService = Depends(get_data),
     model: ForecastingModelService = Depends(get_model),
 ) -> ForecastResponse:
-    loader, _, _ = data.get(req.ticker, req.interval)
+    try:
+        loader, _, _ = data.get(req.ticker, req.interval)
+        raw_df = data.get_raw(req.ticker, req.interval)
+    except (FileNotFoundError, KeyError):
+        raise HTTPException(
+            status_code=404,
+            detail=f"Ticker '{req.ticker}' not found for {req.interval} interval",
+        )
+
+    last_date = raw_df.index[-1]
+
     history = None
-    if req.include_history:
+    if req.lookback_days is not None:
         history = (
-            data.get_raw(req.ticker, req.interval)
-            .iloc[-30:]
-            .assign(date=lambda x: x.index.astype(str))
+            raw_df.tail(req.lookback_days)
+            .assign(date=lambda x: x.index.strftime("%Y-%m-%d"))
             .loc[:, ["date", "close"]]
             .to_dict(orient="records")
         )
@@ -37,9 +47,15 @@ def forecast(
     horizons = data.horizons
     quantiles = model.model.quantiles.tolist()
 
+    freq = "B" if req.interval == "daily" else "W-FRI"
+    future_dates = pd.date_range(start=last_date, periods=max(horizons) + 1, freq=freq)[1:]
+
     return ForecastResponse(
+        ticker=req.ticker,
+        interval=req.interval,
         predictions=[
             {
+                "date": future_dates[horizon - 1].strftime("%Y-%m-%d"),
                 "step": horizon,
                 "quantiles": {
                     f"{quantile:.1f}": round(float(prediction_last[i, j]), 4)

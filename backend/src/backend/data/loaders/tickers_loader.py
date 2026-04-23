@@ -36,10 +36,10 @@ class TickersLoader:
         return self.vocab[ticker]
 
     def decode(self, ticker_id: TickerId) -> Ticker:
-        for ticker, _ticker_id in self.vocab:
+        for ticker, _ticker_id in self.vocab.items():
             if _ticker_id == ticker_id:
                 return ticker
-        return KeyError(ticker_id)
+        raise KeyError(ticker_id)
 
     def save(self, vocab_path: str | Path) -> None:
         with open(vocab_path, "w") as vocab_file:

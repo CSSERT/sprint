@@ -41,7 +41,12 @@ class FactoryMeta:
     feature_target_idx: int
 
 
-class DataProcessor:
-    def prepare(self, data: DataState) -> None: ...
+from abc import ABC, abstractmethod
 
+
+class DataProcessor(ABC):
+    def prepare(self, data: DataState) -> None:
+        pass
+
+    @abstractmethod
     def apply(self, data: DataState) -> DataState: ...

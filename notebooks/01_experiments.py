@@ -1,9 +1,13 @@
 # %% Libraries
 import backend.models.bootstrap  # noqa: F401
-import matplotlib.pyplot as plt
 import torch.optim as optim
 from backend.losses import QuantileLoss
-from backend.services import DataService, ForecastingModelService, TrainerService
+from backend.services import (
+    DataService,
+    ForecastingModelService,
+    PlottingService,
+    TrainerService,
+)
 
 # %% Load data
 data_service = DataService(
@@ -32,30 +36,14 @@ trainer = TrainerService(
 )
 trainer.train(
     train_loader,
-    epochs=10,
+    epochs=20,
 )
 
-# %% Plotting latest
-y_hats, y_trues, tickers = lstm.predict(test_loader)
-
-y_hats = data_service.inverse_y(y_hats)
-y_trues = data_service.inverse_y(y_trues)
-
-ticker_id = data_service.tickers.encode("VCB")
-ticker_indicies = [i for i, ticker in enumerate(tickers) if ticker == ticker_id]
-
-plt.figure()
-
-for i, idx in enumerate(ticker_indicies[-5:]):
-    y_hat = y_hats[idx]
-    y_true = y_trues[idx]
-
-    H = y_hat.shape[0]
-    x = range(i * H, i * H + H)
-
-    plt.plot(x, y_true, color="black")
-    plt.plot(x, y_hat[:, 1], "--")
-    plt.fill_between(x, y_hat[:, 0], y_hat[:, 2], alpha=0.2)
-
-# plt.legend()
-plt.show()
+# %% Plotting
+plot_service = PlottingService()
+plot_service.plot_analysis(
+    data=data_service,
+    model=lstm,
+    ticker="VCB",
+    interval="daily",
+)
