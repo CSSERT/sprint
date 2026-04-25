@@ -1,5 +1,6 @@
 # %% Libraries
 from pathlib import Path
+from datetime import datetime
 
 import backend.models.bootstrap  # noqa: F401
 import torch.optim as optim
@@ -7,7 +8,7 @@ from backend.losses import QuantileLoss
 from backend.services import DataService, ForecastingModelService, TrainerService
 
 # %% Load data
-data_service = DataService(horizons=[1, 5, 10, 20], test_size=0.2)
+data_service = DataService(horizons=[1, 5, 10, 20])
 train_loader, test_loader, meta = data_service.get(
     ["DGW", "FRT", "HPG", "NKG", "OCB", "PDR", "VCB", "VHM"],
     interval="daily",
@@ -38,6 +39,7 @@ trainer.train(
 )
 
 # %% Saving
+timestamp = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
 model.save_pretrained(
-    Path.cwd() / ".." / "artifacts" / "sprint.transformers.patchtst" / "latest"
+    Path.cwd() / ".." / "artifacts" / "sprint.transformers.patchtst" / timestamp
 )

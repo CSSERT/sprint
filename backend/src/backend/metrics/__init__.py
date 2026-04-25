@@ -4,7 +4,14 @@ import numpy as np
 
 from .mean_absolute_error import mean_absolute_error
 from .mean_directional_accuracy import mean_directional_accuracy
-from .r2_score import r2_score
+from .mean_squared_error import mean_squared_error
+from .prediction_interval_coverage import (
+    prediction_interval_coverage,
+)
+from .root_mean_squared_error import root_mean_squared_error
+from .symmetric_mean_absolute_percentage_error import (
+    symmetric_mean_absolute_percentage_error,
+)
 
 
 class Metric(Protocol):
@@ -17,4 +24,11 @@ class Metric(Protocol):
     ) -> float: ...
 
 
-__all__ = ["mean_directional_accuracy", "mean_absolute_error", "r2_score"]
+__all__ = [
+    "mean_directional_accuracy",
+    "mean_absolute_error",
+    "prediction_interval_coverage",
+    "mean_squared_error",
+    "root_mean_squared_error",
+    "symmetric_mean_absolute_percentage_error",
+]

@@ -1,3 +1,4 @@
 from .lstm import LSTM
+from .patchlstm import PatchLSTM
 
-__all__ = ["LSTM"]
+__all__ = ["LSTM", "PatchLSTM"]

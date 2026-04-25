@@ -5,6 +5,7 @@ from typing import AsyncIterator
 import backend.models.bootstrap  # noqa: F401
 from backend.services import DataService, ForecastingModelService
 from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
 
 import v1.routers as v1
 
@@ -22,6 +23,14 @@ app = FastAPI(
     title="Sprint API",
     version="1.0.0",
     lifespan=lifespan,
+)
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_credentials=True,
+    allow_methods=["GET", "POST", "OPTIONS"],
+    allow_headers=["*"],
 )
 
 

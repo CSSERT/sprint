@@ -24,7 +24,7 @@ def forecast(
     try:
         loader, _, _ = data.get(req.ticker, req.interval)
         raw_df = data.get_raw(req.ticker, req.interval)
-    except (FileNotFoundError, KeyError):
+    except FileNotFoundError, KeyError:
         raise HTTPException(
             status_code=404,
             detail=f"Ticker '{req.ticker}' not found for {req.interval} interval",
@@ -48,7 +48,9 @@ def forecast(
     quantiles = model.model.quantiles.tolist()
 
     freq = "B" if req.interval == "daily" else "W-FRI"
-    future_dates = pd.date_range(start=last_date, periods=max(horizons) + 1, freq=freq)[1:]
+    future_dates = pd.date_range(start=last_date, periods=max(horizons) + 1, freq=freq)[
+        1:
+    ]
 
     return ForecastResponse(
         ticker=req.ticker,

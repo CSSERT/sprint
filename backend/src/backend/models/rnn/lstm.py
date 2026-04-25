@@ -1,6 +1,7 @@
 import torch
 import torch.nn as nn
 
+from ...layers import RevIN
 from ...types.model import QuantileModel
 from ..registry import register_model
 
@@ -14,6 +15,7 @@ class LSTM(QuantileModel):
         n_tickers: int,
         horizons: list[int],
         quantiles: list[float],
+        feature_target_idx: int,
         embed_dim: int = 16,
         hidden_size: int = 192,
         n_layers: int = 2,
@@ -27,6 +29,11 @@ class LSTM(QuantileModel):
             embed_dim=embed_dim,
         )
 
+        self.n_features = n_features
+        self.feature_target_idx = feature_target_idx
+
+        self.revin = RevIN(n_features)
+
         self.encoder = nn.LSTM(
             input_size=self.input_size,
             hidden_size=hidden_size,
@@ -39,18 +46,25 @@ class LSTM(QuantileModel):
             nn.LayerNorm(hidden_size),
             nn.Linear(hidden_size, hidden_size // 2),
             nn.GELU(),
-            nn.Linear(hidden_size // 2, self.n_horizons * self.n_quantiles),
+            nn.Linear(
+                hidden_size // 2, self.n_features * self.n_horizons * self.n_quantiles
+            ),
         )
 
     def forward(self, x: torch.Tensor, ticker: torch.Tensor) -> torch.Tensor:
+        x = self.revin.norm(x)
+
         x = super().forward(x, ticker)
 
-        batch_size = x.size(0)
+        B = x.size(0)
 
-        out, _ = self.encoder(x)
-        out = out[:, -1, :]
+        x, _ = self.encoder(x)
+        x = x[:, -1, :]
 
-        out = self.regressor(out)
-        out = out.view(batch_size, self.n_horizons, self.n_quantiles)
+        x = self.regressor(x)
+        x = x.view(B, self.n_features, self.n_horizons, self.n_quantiles)
+        x = x.permute(0, 2, 3, 1)
 
-        return out
+        x = self.revin.denorm(x)
+
+        return x[:, :, :, self.feature_target_idx]
