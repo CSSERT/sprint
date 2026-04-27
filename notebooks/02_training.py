@@ -14,8 +14,9 @@ train_loader, test_loader, meta = data_service.get(
 )
 
 # %% Model
+model_name = "sprint.transformers.patchtst"
 model = ForecastingModelService(
-    "sprint.transformers.patchtst",
+    model_name,
     {
         "n_features": len(data_service.loader.feature_cols),
         "n_tickers": len(data_service.tickers.vocab),
@@ -34,10 +35,8 @@ trainer = TrainerService(
 )
 trainer.train(
     train_loader,
-    epochs=1,
+    epochs=10,
 )
 
 # %% Saving
-model.save_pretrained(
-    Path.cwd() / ".." / "artifacts" / "sprint.transformers.patchtst" / "latest"
-)
+model.save_pretrained(Path.cwd() / ".." / "artifacts" / model_name / "latest")

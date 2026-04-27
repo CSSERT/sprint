@@ -1,6 +1,6 @@
 # %% Libraries
-from pathlib import Path
 from datetime import datetime
+from pathlib import Path
 
 import backend.models.bootstrap  # noqa: F401
 import torch.optim as optim
@@ -8,8 +8,8 @@ from backend.losses import QuantileLoss
 from backend.services import DataService, ForecastingModelService, TrainerService
 
 # %% Load data
-data_service = DataService(horizons=[1, 5, 10, 20])
-train_loader, test_loader, meta = data_service.get(
+data_service = DataService(horizons=[1, 5, 10, 20], test_size=0.05)
+train_loader, val_loader, meta = data_service.get(
     ["DGW", "FRT", "HPG", "NKG", "OCB", "PDR", "VCB", "VHM"],
     interval="daily",
 )
@@ -36,6 +36,10 @@ trainer = TrainerService(
 trainer.train(
     train_loader,
     epochs=1,
+    save_every=100,
+    save_dir=Path.cwd() / ".." / "artifacts" / "checkpoints",
+    val_loader=val_loader,
+    early_stopping_patience=5,
 )
 
 # %% Saving

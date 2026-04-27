@@ -8,6 +8,7 @@ import torch.nn as nn
 import torch.optim as optim
 from torch.utils.data import DataLoader
 
+from ..callbacks import EarlyStopping
 from .forecasting_model_service import ForecastingModelService, ModelConfig
 
 
@@ -73,6 +74,22 @@ class TrainerService:
         trainer_state = {"epoch": self.epoch, "global_step": self.global_step}
         trainer_state_path.write_text(json.dumps(trainer_state))
 
+    def _compute_loss(self, data_loader: DataLoader) -> float:
+        self.forecaster.model.eval()
+        total_loss = 0.0
+        n_batches = 0
+
+        with torch.no_grad():
+            for batch in data_loader:
+                x, y, ticker = (t.to(self.forecaster.device) for t in batch)
+                y_hat = self.forecaster.model(x, ticker)
+                loss = y_hat if self.criterion is None else self.criterion(y_hat, y)
+                if isinstance(loss, torch.Tensor):
+                    total_loss += loss.item()
+                    n_batches += 1
+
+        return total_loss / n_batches if n_batches > 0 else 0.0
+
     def train(
         self,
         data_loader: DataLoader,
@@ -80,7 +97,15 @@ class TrainerService:
         epochs: int = 10,
         save_every: int | None = None,
         save_dir: Path | str | None = None,
+        val_loader: DataLoader | None = None,
+        early_stopping_patience: int | None = None,
     ) -> None:
+        early_stopping = (
+            EarlyStopping(patience=early_stopping_patience)
+            if early_stopping_patience is not None
+            else None
+        )
+
         for _ in range(epochs):
             self.epoch += 1
 
@@ -110,3 +135,9 @@ class TrainerService:
                 ):
                     checkpoint_dir = Path(save_dir) / f"checkpoint-{self.global_step}"
                     self.save_checkpoint(checkpoint_dir)
+
+            if val_loader is not None and early_stopping is not None:
+                val_loss = self._compute_loss(val_loader)
+                early_stopping.step(val_loss)
+                if early_stopping.should_stop:
+                    break

@@ -1,13 +1,11 @@
 # %% Libraries
 from pathlib import Path
 
-import numpy as np
 import backend.models.bootstrap  # noqa: F401
 from backend.metrics import (
     mean_absolute_error,
     mean_directional_accuracy,
     prediction_interval_coverage,
-    mean_squared_error,
     root_mean_squared_error,
     symmetric_mean_absolute_percentage_error,
 )
