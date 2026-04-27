@@ -13,6 +13,7 @@ from backend.services import (
     DataService,
     ForecastingModelService,
     MetricsEvaluatorService,
+    PlottingService,
 )
 
 # %% Load data
@@ -24,7 +25,11 @@ _, test_loader, _ = data_service.get(
 
 # %% Model
 model = ForecastingModelService.from_pretrained(
-    Path.cwd() / ".." / "artifacts" / "sprint.transformers.patchtst" / "latest",
+    Path.cwd()
+    / ".."
+    / "artifacts"
+    / "sprint.transformers.patchtst"
+    / "2026-04-27_epochs-100",
 )
 
 # %% Evaluation
@@ -41,3 +46,12 @@ y_hats, y_trues, _ = model.predict(test_loader)
 y_hats = data_service.inverse_y(y_hats)
 y_trues = data_service.inverse_y(y_trues)
 print(metrics.evaluate(y_trues, y_hats, q50_idx=1))
+
+# %% Plotting
+plot_service = PlottingService()
+plot_service.plot_analysis(
+    data=data_service,
+    model=model,
+    ticker="VHM",
+    interval="daily",
+)

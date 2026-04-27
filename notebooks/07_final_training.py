@@ -35,11 +35,11 @@ trainer = TrainerService(
 )
 trainer.train(
     train_loader,
-    epochs=1,
+    epochs=100,
     save_every=100,
     save_dir=Path.cwd() / ".." / "artifacts" / "checkpoints",
     val_loader=val_loader,
-    early_stopping_patience=5,
+    early_stopping_patience=10,
 )
 
 # %% Saving
