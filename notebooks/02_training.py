@@ -1,4 +1,5 @@
 # %% Libraries
+import sys
 from pathlib import Path
 
 import backend.models.bootstrap  # noqa: F401
@@ -13,45 +14,37 @@ train_loader, test_loader, meta = data_service.get(
     interval="daily",
 )
 
-# %% Models to train
-model_names = [
-    "sprint.linear.dlinear",
-    "sprint.rnn.lstm",
-    "sprint.rnn.patchlstm",
-    "sprint.transformers.vanilla",
-    "sprint.transformers.patchtst",
-    "sprint.transformers.nst",
-]
+# %% Get model name
+default_model = "sprint.transformers.patchtst"
+model_name = sys.argv[1] if len(sys.argv) > 1 else default_model
 
-# %% Training loop
-for model_name in model_names:
-    print(f"Training: '{model_name}'...\n{'=' * 40}")
+# %% Setup model
+model = ForecastingModelService(
+    model_name,
+    {
+        "n_features": len(data_service.loader.feature_cols),
+        "n_tickers": len(data_service.tickers.vocab),
+        "n_lags": len(data_service.lags),
+        "horizons": data_service.horizons,
+        "quantiles": [0.1, 0.5, 0.9],
+        "feature_target_idx": meta.feature_target_idx,
+    },
+)
 
-    model = ForecastingModelService(
-        model_name,
-        {
-            "n_features": len(data_service.loader.feature_cols),
-            "n_tickers": len(data_service.tickers.vocab),
-            "n_lags": len(data_service.lags),
-            "horizons": data_service.horizons,
-            "quantiles": [0.1, 0.5, 0.9],
-            "feature_target_idx": meta.feature_target_idx,
-        },
-    )
+# %% Training
+trainer = TrainerService(
+    forecaster=model,
+    optimizer=optim.AdamW(model.model.parameters(), lr=1e-3),
+    criterion=QuantileLoss(model.model.quantiles.tolist()),
+)
+trainer.train(
+    train_loader,
+    epochs=20,
+    val_loader=test_loader,
+    early_stopping_patience=5,
+)
 
-    trainer = TrainerService(
-        forecaster=model,
-        optimizer=optim.AdamW(model.model.parameters(), lr=1e-3),
-        criterion=QuantileLoss(model.model.quantiles.tolist()),
-    )
-    trainer.train(
-        train_loader,
-        epochs=20,
-        val_loader=test_loader,
-        early_stopping_patience=5,
-    )
-
-    # %% Saving
-    save_path = Path.cwd() / ".." / "artifacts" / model_name / "latest"
-    model.save_pretrained(save_path)
-    print(f"Saved: {save_path}")
+# %% Saving
+save_path = Path.cwd() / ".." / "artifacts" / model_name / "latest"
+model.save_pretrained(save_path)
+print(f"Saved: {save_path}")

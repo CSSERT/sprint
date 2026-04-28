@@ -1,4 +1,4 @@
-from .lstm import LSTM
+from .lstm import LongShortTermMemory
 from .patchlstm import PatchLSTM
 
-__all__ = ["LSTM", "PatchLSTM"]
+__all__ = ["LongShortTermMemory", "PatchLSTM"]

@@ -37,11 +37,12 @@ class LinearTrend(nn.Module):
         self.kernel_size = kernel_size
         self.linear = nn.Linear(kernel_size, kernel_size)
 
-    def forward(self, x):
-        B, T, C = x.shape
+    def forward(self, x: torch.Tensor) -> torch.Tensor:
+        B, C, L = x.shape
 
-        x = x.unfold(-1, self.kernel_size, 1)
-        x = x.reshape(B, C, -1, self.kernel_size)
+        x = x.unfold(2, self.kernel_size, 1)
+        x = x.reshape(B * C, -1, self.kernel_size)
 
         trend = self.linear(x)
-        return trend
+        trend = trend.reshape(B, C, -1)
+        return trend[:, :, :L]

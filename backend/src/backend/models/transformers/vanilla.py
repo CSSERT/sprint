@@ -37,7 +37,7 @@ class VanillaTransformer(QuantileModel):
         self.feature_target_idx = feature_target_idx
         self.n_features = n_features
 
-        self.input_proj = nn.Linear(n_lags, embed_dim)
+        self.features_proj = nn.Linear(1, embed_dim)
 
         self.pos_enc = PositionalEncoding(
             seq_len=n_lags,
@@ -61,17 +61,13 @@ class VanillaTransformer(QuantileModel):
     def forward(self, x: torch.Tensor, ticker: torch.Tensor) -> torch.Tensor:
         x = super().forward(x, ticker)
 
-        x = x.transpose(-1, -2)
-        x = self.input_proj(x)
+        B, T, F = x.shape
+        x = x.reshape(B * F, T, 1)
+        x = self.features_proj(x)
         x = self.pos_enc(x)
-
-        B, F, N, D = x.shape
-        x = x.reshape(B * F, N, D)
 
         for layer in self.encoder:
             x = layer(x)
-
-        x = x.reshape(B, F, N, D)
 
         x = self.flatten(x)
         x = self.head(x)

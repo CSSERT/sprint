@@ -59,6 +59,7 @@ class DLinear(QuantileModel):
         x = self.head(x)
 
         x = x.reshape(B, F, self.n_horizons, self.n_quantiles)
+        x = x[:, : self.n_features]
         x = x.permute(0, 2, 3, 1)
 
         return x[:, :, :, self.feature_target_idx]
