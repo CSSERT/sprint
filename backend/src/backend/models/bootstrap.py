@@ -1,2 +1,2 @@
 # Register all models
-from ..models import rnn, transformers  # noqa: F401
+from ..models import linear, rnn, transformers  # noqa: F401

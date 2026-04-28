@@ -37,13 +37,19 @@ class DLinear(QuantileModel):
 
         self.trend_linear = nn.Linear(n_lags, n_lags)
         self.residual_linear = nn.Linear(n_lags, n_lags)
-
         self.head = nn.Linear(n_lags, self.n_horizons * self.n_quantiles)
 
     def forward(self, x: torch.Tensor, ticker: torch.Tensor) -> torch.Tensor:
         x = super().forward(x, ticker)
 
+        B, T, F = x.shape
+
+        x = x.permute(0, 2, 1)
+
         trend, residual = self.decomposition(x)
+
+        trend = trend.permute(0, 2, 1).reshape(B * F, T)
+        residual = residual.permute(0, 2, 1).reshape(B * F, T)
 
         trend = self.trend_linear(trend)
         residual = self.residual_linear(residual)
@@ -52,7 +58,7 @@ class DLinear(QuantileModel):
 
         x = self.head(x)
 
-        B = x.size(0)
-        x = x.view(B, self.n_horizons, self.n_quantiles)
+        x = x.reshape(B, F, self.n_horizons, self.n_quantiles)
+        x = x.permute(0, 2, 3, 1)
 
         return x[:, :, :, self.feature_target_idx]

@@ -15,9 +15,9 @@ train_loader, test_loader, meta = data_service.get(
 
 # %% Models to train
 model_names = [
+    "sprint.linear.dlinear",
     "sprint.rnn.lstm",
     "sprint.rnn.patchlstm",
-    "sprint.linear.dlinear",
     "sprint.transformers.vanilla",
     "sprint.transformers.patchtst",
     "sprint.transformers.nst",

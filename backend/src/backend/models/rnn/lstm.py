@@ -13,6 +13,7 @@ class LSTM(QuantileModel):
         *,
         n_features: int,
         n_tickers: int,
+        n_lags: int,
         horizons: list[int],
         quantiles: list[float],
         feature_target_idx: int,

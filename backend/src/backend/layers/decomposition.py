@@ -26,12 +26,9 @@ class Decomposition(nn.Module):
                 )
 
     def forward(self, x: torch.Tensor) -> tuple[torch.Tensor, torch.Tensor]:
-        x = x.permute(0, 2, 1)
-
         trend = self.get_trend(x)
         residual = x - trend
-
-        return trend.permute(0, 2, 1), residual.permute(0, 2, 1)
+        return trend, residual
 
 
 class LinearTrend(nn.Module):
