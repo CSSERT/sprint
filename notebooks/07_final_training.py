@@ -9,7 +9,7 @@ from backend.services import DataService, ForecastingModelService, TrainerServic
 
 # %% Load data
 data_service = DataService(horizons=[1, 5, 10, 20], test_size=0.05)
-train_loader, val_loader, meta = data_service.get(
+train_loader, test_loader, meta = data_service.get(
     ["DGW", "FRT", "HPG", "NKG", "OCB", "PDR", "VCB", "VHM"],
     interval="daily",
 )
@@ -38,7 +38,7 @@ trainer.train(
     epochs=100,
     save_every=100,
     save_dir=Path.cwd() / ".." / "artifacts" / "checkpoints",
-    val_loader=val_loader,
+    val_loader=test_loader,
     early_stopping_patience=10,
 )
 

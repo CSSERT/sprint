@@ -111,7 +111,7 @@ class PlottingService:
                     y_median.append(predictions[i, horizon_idx, median_idx])
                     y_low.append(predictions[i, horizon_idx, 0])
                     y_high.append(predictions[i, horizon_idx, -1])
-            except (IndexError, KeyError):
+            except IndexError, KeyError:
                 continue
 
         ax.plot(np.arange(len(plot_df)), plot_df["close"], alpha=0.3, label="Actual")
