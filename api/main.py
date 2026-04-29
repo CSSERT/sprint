@@ -13,7 +13,11 @@ import v1.routers as v1
 @asynccontextmanager
 async def lifespan(app: FastAPI) -> AsyncIterator[None]:
     app.state.model = ForecastingModelService.from_pretrained(
-        Path.cwd() / ".." / "artifacts" / "sprint.rnn.lstm" / "latest",
+        Path.cwd()
+        / ".."
+        / "artifacts"
+        / "sprint.transformers.patchtst"
+        / "2026-04-27_epochs-100",
     )
     app.state.data = DataService(horizons=app.state.model.model.horizons.tolist())
     yield

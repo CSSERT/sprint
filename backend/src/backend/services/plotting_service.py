@@ -1,3 +1,4 @@
+from pathlib import Path
 from typing import TypedDict
 
 import matplotlib.pyplot as plt
@@ -5,9 +6,9 @@ import matplotlib.ticker as mticker
 import numpy as np
 import pandas as pd
 
+from ..types.data import DataState
 from .data_service import DataService
 from .forecasting_model_service import ForecastingModelService
-from ..types.data import DataState
 
 
 class ForecastAnalysisBundle(TypedDict):
@@ -27,6 +28,7 @@ class PlottingService:
         ticker: str,
         interval: str,
         lookback_days: int = 150,
+        save_path: str | Path | None = None,
     ) -> None:
         if predictions is None:
             if model is None:
@@ -69,7 +71,12 @@ class PlottingService:
 
         plt.suptitle(f"Forecast Analysis: {ticker}", y=1.02)
         plt.tight_layout()
-        plt.show()
+
+        if save_path is not None:
+            plt.savefig(save_path, dpi=150, bbox_inches="tight")
+            plt.close()
+        else:
+            plt.show()
 
     def _get_test_timestamps(
         self,

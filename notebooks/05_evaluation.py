@@ -1,4 +1,5 @@
 # %% Libraries
+import json
 from pathlib import Path
 
 import backend.models.bootstrap  # noqa: F401
@@ -33,6 +34,9 @@ model = ForecastingModelService.from_pretrained(
 )
 
 # %% Evaluation
+temp_dir = Path("temp")
+temp_dir.mkdir(exist_ok=True)
+
 metrics = MetricsEvaluatorService(
     {
         "MAE": mean_absolute_error,
@@ -45,7 +49,12 @@ metrics = MetricsEvaluatorService(
 y_hats, y_trues, _ = model.predict(test_loader)
 y_hats = data_service.inverse_y(y_hats)
 y_trues = data_service.inverse_y(y_trues)
-print(metrics.evaluate(y_trues, y_hats, q50_idx=1))
+results = metrics.evaluate(y_trues, y_hats, q50_idx=1)
+print(results)
+
+metrics_path = temp_dir / "evaluation_metrics.json"
+metrics_path.write_text(json.dumps(results, indent=2))
+print(f"Metrics saved to {metrics_path}")
 
 # %% Plotting
 plot_service = PlottingService()
@@ -54,4 +63,6 @@ plot_service.plot_analysis(
     model=model,
     ticker="VHM",
     interval="daily",
+    save_path=temp_dir / "evaluation_plot.png",
 )
+print(f"Plot saved to {temp_dir / 'evaluation_plot.png'}")

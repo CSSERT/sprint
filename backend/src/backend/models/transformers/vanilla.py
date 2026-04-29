@@ -18,7 +18,7 @@ class VanillaTransformer(QuantileModel):
         quantiles: list[float],
         feature_target_idx: int,
         n_layers: int = 3,
-        n_heads: int = 16,
+        n_heads: int = 8,
         embed_dim: int = 128,
         ticker_embed_dim: int = 16,
         dropout: float = 0.1,

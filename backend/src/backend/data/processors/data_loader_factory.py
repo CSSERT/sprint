@@ -13,14 +13,14 @@ from ...types.data import (
 
 
 class DataLoaderFactory(DataProcessor):
-    def __init__(self, *, ticker_col: str) -> None:
+    def __init__(self, *, ticker_col: str, batch_size: int) -> None:
         self.ticker_col = ticker_col
+        self.batch_size = batch_size
 
     def _create_data_loader(
         self,
         df: pd.DataFrame,
         meta: WindowMeta,
-        batch_size: int = 32,
     ) -> DataLoader:
         x = torch.as_tensor(
             df.loc[:, meta.feature_columns].values.reshape(
@@ -38,7 +38,7 @@ class DataLoaderFactory(DataProcessor):
         )
 
         dataset = TensorDataset(x, y, ticker)
-        return DataLoader(dataset, batch_size=batch_size, shuffle=False)
+        return DataLoader(dataset, batch_size=self.batch_size, shuffle=False)
 
     def apply(
         self,

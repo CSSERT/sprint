@@ -38,6 +38,7 @@ class DataService:
         lags: list[int] = list(range(1, 31)),
         horizons: list[int],
         test_size: float = 0.0,
+        batch_size: int = 32,
     ) -> None:
         self.lags = sorted(lags)
         self.horizons = sorted(horizons)
@@ -55,7 +56,10 @@ class DataService:
                 lags=self.lags,
                 horizons=self.horizons,
             ),
-            factory=DataLoaderFactory(ticker_col=self.loader.ticker_col),
+            factory=DataLoaderFactory(
+                ticker_col=self.loader.ticker_col,
+                batch_size=batch_size,
+            ),
         )
 
     def get_raw(
