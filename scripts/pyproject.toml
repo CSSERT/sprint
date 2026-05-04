@@ -1,0 +1,11 @@
+[project]
+name = "scripts"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+requires-python = ">=3.14"
+dependencies = [
+    "pandas>=3.0.1",
+    "typer>=0.24.1",
+    "vnstock>=4.0.2",
+]
