@@ -3,6 +3,8 @@ from pathlib import Path
 
 import backend.models.bootstrap  # noqa: F401
 import torch.optim as optim
+
+# from backend.external.aspect_getter import AspectGetter
 from backend.losses import QuantileLoss
 from backend.services import (
     DataService,
@@ -17,6 +19,19 @@ data_service = DataService(
     horizons=list(range(1, 8)),
     test_size=0.2,
     data_dir=Path.cwd() / ".." / "data" / "processed",
+    feature_cols=[
+        "close",
+        "high",
+        "low",
+        "volume",
+        "FINANCIAL_PRODUCT",
+        "MARKET_PERCEPTION",
+        "LEADERSHIP",
+        "DIGITAL_BANKING",
+        "MACRO_REGULATION",
+        "SERVICE",
+        "FINANCIAL_FEE",
+    ],
 )
 train_loader, test_loader, meta = data_service.get("VCB", interval="daily")
 
@@ -33,7 +48,7 @@ train_loader, test_loader, meta = data_service.get("VCB", interval="daily")
 #     },
 # )
 lstm = ForecastingModelService(
-    "sprint.rnn.patchlstm",
+    "sprint.transformers.itransformer",
     {
         "n_features": len(data_service.loader.feature_cols),
         "n_tickers": len(data_service.tickers.vocab),
@@ -52,7 +67,7 @@ trainer = TrainerService(
 )
 trainer.train(
     train_loader,
-    epochs=5,
+    epochs=1,
 )
 
 # %% Plotting

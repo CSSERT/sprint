@@ -1,8 +1,8 @@
 from pathlib import Path
 
-import typer
-import torch.optim as optim
 import backend.models.bootstrap  # noqa: F401
+import torch.optim as optim
+import typer
 from backend.losses import QuantileLoss
 from backend.services import (
     DataService,
@@ -27,11 +27,22 @@ def main(
         horizons=horizons,
         test_size=test_size,
         batch_size=batch_size,
+        data_dir=Path.cwd() / ".." / "data" / "processed",
+        feature_cols=[
+            "close",
+            "high",
+            "low",
+            "volume",
+            "DIGITAL_BANKING",
+            "FINANCIAL_FEE",
+            "FINANCIAL_PRODUCT",
+            "LEADERSHIP",
+            "MACRO_REGULATION",
+            "MARKET_PERCEPTION",
+            "SERVICE",
+        ],
     )
-    train_loader, test_loader, meta = data_service.get(
-        ["DGW", "FRT", "HPG", "NKG", "OCB", "PDR", "VCB", "VHM"],
-        interval=interval,
-    )
+    train_loader, test_loader, meta = data_service.get("VCB", interval=interval)
 
     _model = ForecastingModelService(
         model,

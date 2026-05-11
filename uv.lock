@@ -1620,6 +1620,7 @@ version = "0.1.0"
 source = { virtual = "scripts" }
 dependencies = [
     { name = "pandas" },
+    { name = "rich" },
     { name = "typer" },
     { name = "vnstock" },
 ]
@@ -1627,6 +1628,7 @@ dependencies = [
 [package.metadata]
 requires-dist = [
     { name = "pandas", specifier = ">=3.0.1" },
+    { name = "rich", specifier = ">=14.3.3" },
     { name = "typer", specifier = ">=0.24.1" },
     { name = "vnstock", specifier = ">=4.0.2" },
 ]

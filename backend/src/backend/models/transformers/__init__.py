@@ -1,4 +1,4 @@
+from .itransformer import iTransformer
 from .patchtst import PatchTST
-from .vanilla import VanillaTransformer
 
-__all__ = ["PatchTST", "VanillaTransformer"]
+__all__ = ["PatchTST", "iTransformer"]

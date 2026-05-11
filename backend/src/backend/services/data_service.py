@@ -32,6 +32,7 @@ class DataService:
         self,
         *,
         data_dir: Path | str = Path.cwd() / ".." / "data" / "raw",
+        feature_cols: list[str] = ["close", "high", "low", "volume"],
         tickers_vocab_path: Path | str = (
             Path.cwd() / ".." / "data" / "tickers" / "vocab_latest.json"
         ),
@@ -43,7 +44,7 @@ class DataService:
         self.lags = sorted(lags)
         self.horizons = sorted(horizons)
 
-        self.loader = StockLoader(data_dir=data_dir)
+        self.loader = StockLoader(data_dir=data_dir, feature_cols=feature_cols)
         self.tickers = TickersLoader.from_vocab(tickers_vocab_path)
 
         self.processors = DataServiceProcessors(

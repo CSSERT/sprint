@@ -15,7 +15,7 @@ class Standardizer(DataProcessor):
     ) -> None:
         train = data.extras.train.loc[:, self.scale_cols]
         self.mean = train.mean()
-        self.std = train.std()
+        self.std = train.std().replace(0, 1)
 
     def _scale(self, df: pd.DataFrame) -> pd.DataFrame:
         return df.assign(**(df.loc[:, self.scale_cols] - self.mean) / self.std)
